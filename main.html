@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+  <title>Document</title>
+
+  <link rel="stylesheet" href="css.styles.css">
+  <!-- <link rel="stylesheet" href="bootstrap_css/bootstrap.min.css"> -->
+  <!-- jquery読み込み -->
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+
+
+  <script defer src="/__/firebase/5.3.1/firebase-app.js"></script>
+  <script defer src="/__/firebase/init.js"></script>
+  <script defer src="/__/firebase/5.3.1/firebase-auth.js"></script>
+  <script src="https://cdn.firebase.com/libs/firebaseui/3.1.1/firebaseui.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.1.1/firebase.js"></script>
+
+
+  <link type="text/css" rel="stylesheet" href="https://cdn.firebase.com/libs/firebaseui/3.1.1/firebaseui.css" />
+</head>
+
+<body>
+
+
+  <div id="main">
+    <h1>モバゲー風SNS</h1>
+    <h2>name</h2>
+    <div id="main-menu-container">
+      <div style="width: 50%; padding: 10px 0 0 10px;">
+        <img src="img/body.png" alt="" style="background-color: gray; position: absolute; z-index: 1;max-width:350px ">
+        <div>
+          <img class="face" src="img/face0.png" alt="" style=" position: absolute; z-index: 1;max-width:350px ">
+          <img class="head" src="img/head2.png" alt="" style=" position: absolute; z-index: 2;max-width:350px ">
+          <img class="tops" src="img/tops0.png" alt="" style=" position: absolute; z-index: 3;max-width:350px ">
+          <img class="bottoms" src="img/bottoms0.png" alt="" style=" position: absolute; z-index: 2;max-width:350px ">
+          <img class="shoes" src="img/shoes0.png" alt="" style=" position: absolute; z-index: 1;max-width:350px ">
+        </div>
+      </div>
+      <div style="width: 50%; ">
+        <ul style="font-size: 35px; list-style: none; padding-left:0 ;">
+          <li>マイプロフィール</li>
+          <li class="tweet">日記を書く</li>
+          <li>ミニメール</li>
+          <li>友達リスト</li>
+          <li class="change">アイテムバッグ</li>
+        </ul>
+        <ul style="font-size: 35px; list-style: none; padding-left:0 ;">
+          <li>コメント</li>
+          <li>よろしく</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- アイテムバック -->
+    <dl id="acMenu">
+      <dt>顔</dt>
+      <dd id="thum-face">
+        <ul class="thum">
+        </ul>
+      </dd>
+      <dt>頭</dt>
+      <dd id="thum-head">
+        <ul class="thum">
+        </ul>
+      </dd>
+      <dt>トップス</dt>
+      <dd id="thum-tops">
+        <ul class="thum">
+        </ul>
+      </dd>
+      <dt>ボトムス</dt>
+      <dd id="thum-bottoms">
+        <ul class="thum">
+        </ul>
+      </dd>
+      <dt>靴</dt>
+      <dd id="thum-shoes">
+        <ul class="thum">
+        </ul>
+      </dd>
+    </dl>
+
+    <!-- 入力フォーム -->
+    <ul id="tweet-container">
+      <li>
+        <label for="name">name</label>
+        <input type="text" id="name">
+      </li>
+      <li>
+        <textarea name="" id="text" cols="30" rows="10"></textarea>
+      </li>
+      <li>
+        <button id="send">send</button>
+      </li>
+    </ul>
+    <!-- データ出力場所 -->
+    <ul id="output"></ul>
+
+    <button id="logout">ログアウト</button>
+
+  </div>
+
+
+  <script>
+
+
+    // Your web app's Firebase configuration
+    var firebaseConfig = {
+      apiKey: "",
+      authDomain: "chat-sample-db906.firebaseapp.com",
+      databaseURL: "https://chat-sample-db906.firebaseio.com",
+      projectId: "chat-sample-db906",
+      storageBucket: "chat-sample-db906.appspot.com",
+      messagingSenderId: "233881950125",
+      appId: "1:233881950125:web:0f52742b678ce7922b7324"
+    };
+    // Initialize Firebase
+    firebase.initializeApp(firebaseConfig);
+
+    var uid;
+
+    firebase.auth().onAuthStateChanged(function (user) {
+      if (user) {
+        // User is signed in.
+        console.log('login済');
+        var displayName = user.displayName;
+        var email = user.email;
+        var emailVerified = user.emailVerified;
+        var photoURL = user.photoURL;
+        var isAnonymous = user.isAnonymous;
+        uid = user.uid;
+        var providerData = user.providerData;
+        console.log(uid);
+        localStorage.setItem("id", uid);
+
+        // ...
+      } else {
+        // User is signed out.
+        // ...
+      }
+    });
+    // console.log(user);
+    // .doc(`${uid}`)
+
+    var nowuid;
+    if (localStorage.getItem("id")) {
+
+      const jsonData = localStorage.getItem('id');
+      nowuid = jsonData;
+    }
+    console.log(nowuid);
+
+
+
+    var db = firebase.firestore().collection("user");
+    var dbtweet = firebase.firestore().collection(`oKL2g6wqReM93yxlkX4uArt5ch02tweet`);
+
+
+
+    db.onSnapshot(function (querySnapshot) {
+      console.log(querySnapshot);
+      // onSnapshotでcloud firestoreのデータ変更時に実行される！
+      // querySnapshot.docsにcloud firestoreのデータが配列形式で入る
+      var dataArray = []; // 必要なデータだけが入った新しい配列を作成
+
+      querySnapshot.docs.forEach(function (doc) {
+        //data()はドキュメントの内容を取得するgoogleの関数
+
+        const data = {
+          data: doc.data(),
+        }
+        dataArray.push(data);
+      });
+      console.log(dataArray);
+      const tagArray = [];
+      dataArray.forEach(function (data) {
+        tagArray.push(
+          data.id)
+
+        console.log(data.data.face);
+        $(".face").attr('src', `${data.data.face}`);
+        $(".head").attr('src', `${data.data.head}`);
+        $(".tops").attr('src', `${data.data.tops}`);
+        $(".bottoms").attr('src', `${data.data.bottoms}`);
+        $(".shoes").attr('src', `${data.data.shoes}`);
+      })
+
+    });
+
+
+    dbtweet.onSnapshot(function (querySnapshot) {
+      console.log(querySnapshot);
+      // onSnapshotでcloud firestoreのデータ変更時に実行される！
+      // querySnapshot.docsにcloud firestoreのデータが配列形式で入る
+      var dataArray = []; // 必要なデータだけが入った新しい配列を作成
+
+      querySnapshot.docs.forEach(function (doc) {
+        //data()はドキュメントの内容を取得するgoogleの関数
+        console.log(doc);
+        const data = {
+          id: doc.id,
+          data: doc.data(),
+        }
+        console.log(data);
+        dataArray.push(data);
+      });
+      const tagArray = [];
+      dataArray.forEach(function (data) {
+        tagArray.push(`
+          <li id=${data.id}>
+          <p>${data.data.title}</p>
+          <p>${data.data.text}</p>
+          <p>${convertFromFirestoreTimestampToDatetime(data.data.time.seconds)}</p>
+          </li>
+          `)
+        console.log(data);
+      })
+      $('#output').html(tagArray);
+
+    });
+
+
+
+    // 日時をいい感じの形式にする関数
+    function convertFromFirestoreTimestampToDatetime(timestamp) {
+      const _d = timestamp ? new Date(timestamp * 1000) : new Date();
+      const Y = _d.getFullYear();
+      const m = (_d.getMonth() + 1).toString().padStart(2, '0');
+      const d = _d.getDate().toString().padStart(2, '0');
+      const H = _d.getHours().toString().padStart(2, '0');
+      const i = _d.getMinutes().toString().padStart(2, '0');
+      const s = _d.getSeconds().toString().padStart(2, '0');
+      return `${Y}/${m}/${d} ${H}:${i}:${s}`;
+    }
+    // データベースの設定を記述
+    // 受信処理の記述
+    //orderBy()googleの関数
+    // db.orderBy('time', 'desc').onSnapshot(function (querySnapshot) {
+    //   // onSnapshotでcloud firestoreのデータ変更時に実行される！
+    //   // querySnapshot.docsにcloud firestoreのデータが配列形式で入る
+    //   const dataArray = []; // 必要なデータだけが入った新しい配列を作成
+    //   querySnapshot.docs.forEach(function (doc) {
+    //     //data()はドキュメントの内容を取得するgoogleの関数
+    //     // console.log(doc.data());
+    //     const data = {
+    //       id: doc.id,
+    //       data: doc.data(),
+    //     }
+    //     dataArray.push(data);
+    //   });
+    //   const tagArray = []; 
+    //   dataArray.forEach(function (data) {
+    //     tagArray.push(`
+    //           <li id=${data.id}>
+    //           <p>${data.data.name}</p>
+    //           <p>${data.data.text}</p>
+    //           <p>${convertFromFirestoreTimestampToDatetime(data.data.time.seconds)}</p>
+    //           </li>
+    //           `)
+    //   })
+    //   $('#output').html(tagArray);
+
+    // });
+
+    // 送信ボタンクリック時にデータを送信する処理
+    $("#send").on('click', function () {
+      const data = {
+        title: $('#name').val(), // inputの入力値
+        text: $('#text').val(), // textareaの入力値
+        time: firebase.firestore.FieldValue.serverTimestamp(), // 登録日時
+      };
+      dbtweet.add(data);
+      $("#text").val('');
+      $('#name').val('');
+    });
+    // enterｷｰ押した時データを送信する処理
+    $(window).keydown(function (e) {
+      //keyCode == 13はenter
+      if (e.keyCode == 13) {
+        const data = {
+          title: $('#name').val(), // inputの入力値
+          text: $('#text').val(), // textareaの入力値
+          time: firebase.firestore.FieldValue.serverTimestamp(), // 登録日時
+        };
+        dbtweet.add(data);
+        $("#text").val('');
+        $('#name').val('');
+      }
+    });
+
+    // データをリアルタイムに取得する処理
+    dbtweet.orderBy('time', 'desc').onSnapshot(function (querySnapshot) {
+      // まずはconsole.log()で出力してデータの形を確認！
+      console.log(dbtweet);
+    });
+
+    // firebase.auth().createUserWithEmailAndPassword(email, password).catch(function (error) {
+    //     // Handle Errors here.
+    //     var errorCode = error.code;
+    //     var errorMessage = error.message;
+    //     // ...
+    //   }); email - password.html
+
+    // firebase.auth().signInWithEmailAndPassword(email, password).catch(function (error) {
+    //     // Handle Errors here.
+    //     var errorCode = error.code;
+    //     var errorMessage = error.message;
+    //     // ...
+    //   }); email - password.html
+
+    $("#logout").on('click', function () {
+      firebase.auth().onAuthStateChanged((user) => {
+        firebase.auth().signOut().then(() => {
+          localStorage.clear();
+          console.log("ログアウトしました");
+          window.location.href = "index.html";
+        })
+          .catch((error) => {
+            console.log(`ログアウト時にエラーが発生しました (${error})`);
+          });
+      });
+
+    });
+
+
+    setTimeout(function () {
+      window.onload = function () {
+        if (!window.location.hash) {
+          window.location = window.location + '#loaded';
+          window.location.reload();
+        }
+      }
+      console.log(nowuid);
+    }, 1000);
+
+
+
+  </script>
+  <!-- Insert these scripts at the bottom of the HTML, but before you use any Firebase services -->
+
+  <!-- Firebase App (the core Firebase SDK) is always required and must be listed first -->
+  <script src="/__/firebase/7.23.0/firebase-app.js"></script>
+
+  <!-- If you enabled Analytics in your project, add the Firebase SDK for Analytics -->
+  <script src="/__/firebase/7.23.0/firebase-analytics.js"></script>
+
+  <!-- Add Firebase products that you want to use -->
+  <script src="/__/firebase/7.23.0/firebase-auth.js"></script>
+  <script src="/__/firebase/7.23.0/firebase-firestore.js"></script>
+
+  <script src="js/main.js"></script>
+</body>
+
+</html>

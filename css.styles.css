@@ -1,0 +1,78 @@
+body {
+  width: 750px;
+  margin: 0 auto;
+}
+#main-menu-container {
+  display: flex;
+  width: 100%;
+  height: 530px;
+  /* background-color: brown; */
+  margin-top: 10px;
+  border-bottom: 1px solid ;
+}
+
+#tweet-container {
+  width: 80%;
+  list-style: none;
+  display: none;
+}
+
+#tweet-container input{
+  width: 80%;
+  list-style: none;
+}
+
+#tweet-container textarea{
+  width: 100%;
+  list-style: none;
+}
+
+#acMenu {
+  position: relative;
+  /* bottom: 100px; */
+  z-index: 5;
+  display: none;
+}
+
+#acMenu dt{
+background-color: rgba(255, 255, 255, 0.8);
+display:block;
+width:100%;
+height:50px;
+line-height:50px;
+text-align:center;
+border:#666 1px solid;
+cursor:pointer;
+}
+#acMenu dd{
+background:#f2f2f2;
+width:100%;
+height:100%;
+line-height:50px;
+text-align:center;
+border:#666 1px solid;
+margin: 0;
+display:none;
+}
+
+.thum {
+  padding-left: 10px;
+  display: flex;
+  list-style: none;
+}
+
+.thum img {
+  width: 80px;
+  height: 80px;
+}
+
+#output {
+  padding-left: 10px;
+  height: 400px;
+  overflow: scroll;
+}
+
+#output li{
+  list-style: none;
+  border-bottom: 1px solid;
+}
