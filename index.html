@@ -9,13 +9,12 @@
   <title>Document</title>
 
   <link rel="stylesheet" href="css.styles.css">
-  <!-- <link rel="stylesheet" href="bootstrap_css/bootstrap.min.css"> -->
   <!-- jquery読み込み -->
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
-
+  <script defer src="/__/firebase/5.3.1/firebase-app.js"></script>
   <script src="https://cdn.firebase.com/libs/firebaseui/3.1.1/firebaseui.js"></script>
   <link type="text/css" rel="stylesheet" href="https://cdn.firebase.com/libs/firebaseui/3.1.1/firebaseui.css" />
-  
+  <script defer src="/__/firebase/init.js"></script>
 </head>
 
 <body >
@@ -29,16 +28,16 @@
     <li>aaaa1234</li>
     <li>bbbb@gmail.com</li>
     <li>bbbb1234</li>
-  
   </ul>
 
+  
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.1.1/firebase.js"></script>
 
   <script>
     // Your web app's Firebase configuration
     var firebaseConfig = {
-      apiKey: "",
+      apiKey: ,
       authDomain: "chat-sample-db906.firebaseapp.com",
       databaseURL: "https://chat-sample-db906.firebaseio.com",
       projectId: "chat-sample-db906",
@@ -49,15 +48,16 @@
     // Initialize Firebase
     firebase.initializeApp(firebaseConfig);
     
+
     firebase.auth().onAuthStateChanged((user) => {
         // ログイン済み
         if (user) {
-          showLogin('Login Complete!', `${user.displayName}さんがログインしました<br>(${user.uid})`);
+          // showLogin('Login Complete!', `${user.displayName}さんがログインしました<br>(${user.uid})`);
           console.log(user);
           var uid = user.uid;
           var providerData = user.providerData;
           console.log(uid);
-          localStorage.setItem("id", uid);
+          localStorage.setItem("id", user.uid);
         }
         // 未ログイン
         else {
@@ -66,7 +66,6 @@
         }
       });
   </script>
-
 
   <!-- //ログイン用 -->
   <script type="text/javascript">
@@ -93,16 +92,22 @@
 
 
 
-  <!-- Insert these scripts at the bottom of the HTML, but before you use any Firebase services -->
+<!-- Insert these scripts at the bottom of the HTML, but before you use any Firebase services -->
 
-  <!-- Firebase App (the core Firebase SDK) is always required and must be listed first -->
+<!-- Firebase App (the core Firebase SDK) is always required and must be listed first -->
+<script src="/__/firebase/7.23.0/firebase-app.js"></script>
 
-  <!-- If you enabled Analytics in your project, add the Firebase SDK for Analytics -->
+<!-- If you enabled Analytics in your project, add the Firebase SDK for Analytics -->
+<script src="/__/firebase/7.23.0/firebase-analytics.js"></script>
 
-  <!-- Add Firebase products that you want to use -->
+<!-- Add Firebase products that you want to use -->
+<script src="/__/firebase/7.23.0/firebase-auth.js"></script>
+<script src="/__/firebase/7.23.0/firebase-firestore.js"></script>
 
-  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
-  <script src="js/main.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+
+<script src="/__/firebase/init.js"></script>
+<script src="js/main.js"></script>
 </body>
 
 </html>
