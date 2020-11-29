@@ -9,27 +9,62 @@
   <title>Document</title>
 
   <link rel="stylesheet" href="css.styles.css">
-  <!-- <link rel="stylesheet" href="bootstrap_css/bootstrap.min.css"> -->
+  <link rel="stylesheet" href="bootstrap_css/bootstrap.min.css">
   <!-- jquery読み込み -->
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
 
 
-  <script defer src="/__/firebase/5.3.1/firebase-app.js"></script>
-  <script defer src="/__/firebase/init.js"></script>
-  <script defer src="/__/firebase/5.3.1/firebase-auth.js"></script>
+  <!-- <script defer src="/__/firebase/5.3.1/firebase-app.js"></script> -->
+  <!-- <script defer src="/__/firebase/init.js"></script> -->
+  <!-- <script defer src="/__/firebase/5.3.1/firebase-auth.js"></script> -->
   <script src="https://cdn.firebase.com/libs/firebaseui/3.1.1/firebaseui.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.1.1/firebase.js"></script>
+  
 
 
   <link type="text/css" rel="stylesheet" href="https://cdn.firebase.com/libs/firebaseui/3.1.1/firebaseui.css" />
+
+      <script>
+        $(function () {
+          var h = $(window).height();
+
+          // $('#wrap').css('display', 'none');
+          $('#loader-bg ,#loader').height(h).css('display', 'block');
+        });
+
+        // $(window).load(function () { //全ての読み込みが完了したら実行
+        //   $('#loader-bg').delay(900).fadeOut(800);
+        //   $('#loader').delay(600).fadeOut(300);
+        //   $('#wrap').css('display', 'block');
+        // });
+
+        //1秒たったら強制的にロード画面を非表示
+        $(function () {
+          setTimeout('stopload()', 1000);
+        });
+
+        function stopload() {
+          $('#wrap').css('display', 'block');
+          $('#loader-bg').delay(900).fadeOut(800);
+          $('#loader').delay(600).fadeOut(300);
+        }
+      </script>
+
+
 </head>
 
 <body>
-
+  <div id="loader-bg">
+    <div id="loader">
+      <!-- <img src="img-loading.gif" width="80" height="80" alt="Now Loading..." /> -->
+      <p>Now Loading...</p>
+    </div>
+  </div>
+  <div id="wrap" style="display: none;">
 
   <div id="main">
     <h1>モバゲー風SNS</h1>
-    <h2>name</h2>
+    <h2 id=user-name>name</h2>
     <div id="main-menu-container">
       <div style="width: 50%; padding: 10px 0 0 10px;">
         <img src="img/body.png" alt="" style="background-color: gray; position: absolute; z-index: 1;max-width:350px ">
@@ -43,7 +78,7 @@
       </div>
       <div style="width: 50%; ">
         <ul style="font-size: 35px; list-style: none; padding-left:0 ;">
-          <li>マイプロフィール</li>
+          <li class="my-profile">マイプロフィール</li>
           <li class="tweet">日記を書く</li>
           <li>ミニメール</li>
           <li>友達リスト</li>
@@ -51,7 +86,7 @@
         </ul>
         <ul style="font-size: 35px; list-style: none; padding-left:0 ;">
           <li>コメント</li>
-          <li>よろしく</li>
+          <li id="comment-area">よろしく</li>
         </ul>
       </div>
     </div>
@@ -85,11 +120,25 @@
       </dd>
     </dl>
 
-    <!-- 入力フォーム -->
-    <ul id="tweet-container">
+    <!-- プロフィール -->
+    <ul id="profile">
       <li>
         <label for="name">name</label>
         <input type="text" id="name">
+      </li>
+      <li>
+        <textarea name="" id="comment" cols="30" rows="10"></textarea>
+      </li>
+      <li>
+        <button id="profile-update">send</button>
+      </li>
+    </ul>
+
+    <!-- tweet入力フォーム -->
+    <ul id="tweet-container">
+      <li>
+        <label for="title">title</label>
+        <input type="text" id="title">
       </li>
       <li>
         <textarea name="" id="text" cols="30" rows="10"></textarea>
@@ -98,17 +147,20 @@
         <button id="send">send</button>
       </li>
     </ul>
-    <!-- データ出力場所 -->
+    <!-- tweet出力場所 -->
     <ul id="output"></ul>
 
-    <button id="logout">ログアウト</button>
+    <!-- ログアウトボタン -->
+    <button id="logout" class="btn-outline-danger">ログアウト</button>
+
+      </div>
+        
 
   </div>
 
 
+
   <script>
-
-
     // Your web app's Firebase configuration
     var firebaseConfig = {
       apiKey: "",
@@ -122,8 +174,7 @@
     // Initialize Firebase
     firebase.initializeApp(firebaseConfig);
 
-    var uid;
-
+    // ログイン状態をチェックする
     firebase.auth().onAuthStateChanged(function (user) {
       if (user) {
         // User is signed in.
@@ -133,98 +184,79 @@
         var emailVerified = user.emailVerified;
         var photoURL = user.photoURL;
         var isAnonymous = user.isAnonymous;
-        uid = user.uid;
+        var uid = user.uid;
         var providerData = user.providerData;
-        console.log(uid);
-        localStorage.setItem("id", uid);
-
-        // ...
       } else {
         // User is signed out.
         // ...
       }
     });
-    // console.log(user);
-    // .doc(`${uid}`)
 
-    var nowuid;
-    if (localStorage.getItem("id")) {
+    var nowuid;//現在のuidを入れる変数
+    var db;
+    var dbtweet;
 
-      const jsonData = localStorage.getItem('id');
-      nowuid = jsonData;
-    }
-    console.log(nowuid);
-
-
-
-    var db = firebase.firestore().collection("user");
-    var dbtweet = firebase.firestore().collection(`oKL2g6wqReM93yxlkX4uArt5ch02tweet`);
-
-
-
-    db.onSnapshot(function (querySnapshot) {
-      console.log(querySnapshot);
-      // onSnapshotでcloud firestoreのデータ変更時に実行される！
-      // querySnapshot.docsにcloud firestoreのデータが配列形式で入る
-      var dataArray = []; // 必要なデータだけが入った新しい配列を作成
-
-      querySnapshot.docs.forEach(function (doc) {
-        //data()はドキュメントの内容を取得するgoogleの関数
-
-        const data = {
-          data: doc.data(),
-        }
-        dataArray.push(data);
+    //promiseを使用して非同期処理?を制御
+    //promise使用理由ログイン時にlocalstrageにuidを格納するタイミングで読み込み時間が遅いとlocalstrageにuidが格納される前にgetitem処理が行われてプロフィール画像などがよみこまれないため、時間をずらしてgetitem。そのあとthem以下の処理を実行するようにした。（使い方があっているが不明だがうまくいった）
+    Promise.resolve()
+    .then(function () {
+      return new Promise(function (resolve, reject) {
+        //ログイン中のuidを取得
+        //直接取り出す方法がわからなかったのでログイン成功時に一度uidをlocalstrageにあげて取り出すことによってuidを取得できた
+        setTimeout(() => {
+          const jsonData = localStorage.getItem('id');
+          nowuid = jsonData;
+          console.log(nowuid);
+          resolve();
+        }, 800);
       });
-      console.log(dataArray);
-      const tagArray = [];
-      dataArray.forEach(function (data) {
-        tagArray.push(
-          data.id)
-
-        console.log(data.data.face);
-        $(".face").attr('src', `${data.data.face}`);
-        $(".head").attr('src', `${data.data.head}`);
-        $(".tops").attr('src', `${data.data.tops}`);
-        $(".bottoms").attr('src', `${data.data.bottoms}`);
-        $(".shoes").attr('src', `${data.data.shoes}`);
-      })
-
-    });
-
-
-    dbtweet.onSnapshot(function (querySnapshot) {
-      console.log(querySnapshot);
-      // onSnapshotでcloud firestoreのデータ変更時に実行される！
-      // querySnapshot.docsにcloud firestoreのデータが配列形式で入る
-      var dataArray = []; // 必要なデータだけが入った新しい配列を作成
-
-      querySnapshot.docs.forEach(function (doc) {
-        //data()はドキュメントの内容を取得するgoogleの関数
-        console.log(doc);
-        const data = {
-          id: doc.id,
-          data: doc.data(),
-        }
-        console.log(data);
-        dataArray.push(data);
+    })
+    .then(function (value) {
+      return new Promise(function (resolve, reject) {
+        //firestore上ではプロフィール情報、stweet情報は全てuidと紐づくようにしている
+        // dbにはプロフィール情報をfirestoreからもってくる。コレクション名userドキュメント名が"uid"となっている
+        db = firebase.firestore().collection("user").doc(`${nowuid}`);
+        // dbtweetにはtweet情報をfirestoreからもってくる。コレクション名tweet。フィールドのidに"uid"が格納されている
+        dbtweet = firebase.firestore().collection('tweet');
+        db.onSnapshot(function (doc)  {
+             console.log(doc.data().face);
+            $(".face").attr('src', `${doc.data().face}`);
+            $(".head").attr('src', `${doc.data().head}`);
+            $(".tops").attr('src', `${doc.data().tops}`);
+            $(".bottoms").attr('src', `${doc.data().bottoms}`);
+            $(".shoes").attr('src', `${doc.data().shoes}`);
+            $("#user-name").text(`${doc.data().name}`);
+            $("#comment-area").text(`${doc.data().comment}`);
+        });
+        //tweetした内容が表示される
+        //tweetドキュメントのidがログイン中のuidと同じものだけ抽出
+        //以下のwhere + ordarByでする場合は最初はエラーとなるがconsoleのほうにfirestoreで改善できるurlがされるので、そこからindexを作成すれば処理できるようになる
+        dbtweet.where("id", "==", `${nowuid}`).orderBy('time', 'desc').onSnapshot(function (querySnapshot) {
+          var dataArray = []; 
+          querySnapshot.docs.forEach(function (doc) {
+            const data = {
+              id: doc.id,
+              data: doc.data(),
+            }
+            console.log(data);
+            dataArray.push(data);
+          });
+          const tagArray = [];
+          dataArray.forEach(function (data) {
+            tagArray.push(`
+              <li id=${data.id}>
+              <p>${data.data.title}</p>
+              <p>${data.data.text}</p>
+              <p>${convertFromFirestoreTimestampToDatetime(data.data.time.seconds)}</p>
+              </li>
+              `)
+            console.log(data);
+          })
+          $('#output').html(tagArray);
+        });
+    
       });
-      const tagArray = [];
-      dataArray.forEach(function (data) {
-        tagArray.push(`
-          <li id=${data.id}>
-          <p>${data.data.title}</p>
-          <p>${data.data.text}</p>
-          <p>${convertFromFirestoreTimestampToDatetime(data.data.time.seconds)}</p>
-          </li>
-          `)
-        console.log(data);
       })
-      $('#output').html(tagArray);
-
-    });
-
-
 
     // 日時をいい感じの形式にする関数
     function convertFromFirestoreTimestampToDatetime(timestamp) {
@@ -237,82 +269,33 @@
       const s = _d.getSeconds().toString().padStart(2, '0');
       return `${Y}/${m}/${d} ${H}:${i}:${s}`;
     }
-    // データベースの設定を記述
-    // 受信処理の記述
-    //orderBy()googleの関数
-    // db.orderBy('time', 'desc').onSnapshot(function (querySnapshot) {
-    //   // onSnapshotでcloud firestoreのデータ変更時に実行される！
-    //   // querySnapshot.docsにcloud firestoreのデータが配列形式で入る
-    //   const dataArray = []; // 必要なデータだけが入った新しい配列を作成
-    //   querySnapshot.docs.forEach(function (doc) {
-    //     //data()はドキュメントの内容を取得するgoogleの関数
-    //     // console.log(doc.data());
-    //     const data = {
-    //       id: doc.id,
-    //       data: doc.data(),
-    //     }
-    //     dataArray.push(data);
-    //   });
-    //   const tagArray = []; 
-    //   dataArray.forEach(function (data) {
-    //     tagArray.push(`
-    //           <li id=${data.id}>
-    //           <p>${data.data.name}</p>
-    //           <p>${data.data.text}</p>
-    //           <p>${convertFromFirestoreTimestampToDatetime(data.data.time.seconds)}</p>
-    //           </li>
-    //           `)
-    //   })
-    //   $('#output').html(tagArray);
 
-    // });
+    // プロフール更新ボタン
+    $("#profile-update").on('click', function () {
+      const data = {
+        name: $('#name').val(),
+        comment: $('#comment').val(), 
+      };
 
-    // 送信ボタンクリック時にデータを送信する処理
+      db.set(data, { merge: true });
+      $("#name").val('');
+      $('#comment').val('');
+    });
+
+    //tweet送信/更新
     $("#send").on('click', function () {
       const data = {
-        title: $('#name').val(), // inputの入力値
-        text: $('#text').val(), // textareaの入力値
-        time: firebase.firestore.FieldValue.serverTimestamp(), // 登録日時
+        id: `${nowuid}`,
+        title: $('#title').val(), 
+        text: $('#text').val(), 
+        time: firebase.firestore.FieldValue.serverTimestamp(), 
       };
       dbtweet.add(data);
       $("#text").val('');
-      $('#name').val('');
-    });
-    // enterｷｰ押した時データを送信する処理
-    $(window).keydown(function (e) {
-      //keyCode == 13はenter
-      if (e.keyCode == 13) {
-        const data = {
-          title: $('#name').val(), // inputの入力値
-          text: $('#text').val(), // textareaの入力値
-          time: firebase.firestore.FieldValue.serverTimestamp(), // 登録日時
-        };
-        dbtweet.add(data);
-        $("#text").val('');
-        $('#name').val('');
-      }
+      $('#title').val('');
     });
 
-    // データをリアルタイムに取得する処理
-    dbtweet.orderBy('time', 'desc').onSnapshot(function (querySnapshot) {
-      // まずはconsole.log()で出力してデータの形を確認！
-      console.log(dbtweet);
-    });
-
-    // firebase.auth().createUserWithEmailAndPassword(email, password).catch(function (error) {
-    //     // Handle Errors here.
-    //     var errorCode = error.code;
-    //     var errorMessage = error.message;
-    //     // ...
-    //   }); email - password.html
-
-    // firebase.auth().signInWithEmailAndPassword(email, password).catch(function (error) {
-    //     // Handle Errors here.
-    //     var errorCode = error.code;
-    //     var errorMessage = error.message;
-    //     // ...
-    //   }); email - password.html
-
+    //ログアウト
     $("#logout").on('click', function () {
       firebase.auth().onAuthStateChanged((user) => {
         firebase.auth().signOut().then(() => {
@@ -326,32 +309,13 @@
       });
 
     });
+    
+    </script>
 
 
-    setTimeout(function () {
-      window.onload = function () {
-        if (!window.location.hash) {
-          window.location = window.location + '#loaded';
-          window.location.reload();
-        }
-      }
-      console.log(nowuid);
-    }, 1000);
-
-
-
-  </script>
+    
   <!-- Insert these scripts at the bottom of the HTML, but before you use any Firebase services -->
 
-  <!-- Firebase App (the core Firebase SDK) is always required and must be listed first -->
-  <script src="/__/firebase/7.23.0/firebase-app.js"></script>
-
-  <!-- If you enabled Analytics in your project, add the Firebase SDK for Analytics -->
-  <script src="/__/firebase/7.23.0/firebase-analytics.js"></script>
-
-  <!-- Add Firebase products that you want to use -->
-  <script src="/__/firebase/7.23.0/firebase-auth.js"></script>
-  <script src="/__/firebase/7.23.0/firebase-firestore.js"></script>
 
   <script src="js/main.js"></script>
 </body>
